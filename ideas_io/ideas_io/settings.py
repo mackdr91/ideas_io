@@ -5,6 +5,7 @@ Django settings for ideas_io project.
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 # Load environment variables
 load_dotenv()
@@ -16,7 +17,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
+
+if ENVIRONMENT == 'development':
+    DEBUG = True
+else:
+    DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -70,7 +76,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ideas_io.wsgi.application'
 
 # Database configuration
-if DEBUG:
+POSTGRES_LOCAL = False
+if ENVIRONMENT == 'development' or POSTGRES_LOCAL == 'True' or os.getenv('DATABASE_URL') is None:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -79,14 +86,7 @@ if DEBUG:
     }
 else:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('PGDATABASE', 'railway'),
-            'USER': os.getenv('PGUSER', 'postgres'),
-            'PASSWORD': os.getenv('PGPASSWORD', ''),
-            'HOST': os.getenv('PGHOST', 'localhost'),
-            'PORT': os.getenv('PGPORT', '5432'),
-        }
+        'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
     }
 
 # Password validation
