@@ -1,13 +1,8 @@
 [build]
 builder = "nixpacks"
-buildCommand = "sh -c 'cd ideas_io && pip install -r requirements.txt'"
+buildCommand = "pip install -r ./ideas_io/requirements.txt"
 
 [deploy]
-startCommand = "sh -c 'cd ideas_io && gunicorn ideas_io.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 60'"
+startCommand = "cd ideas_io && gunicorn --chdir ideas_io ideas_io.wsgi:application --log-file - --bind 0.0.0.0:$PORT"
 healthcheckPath = "/"
-healthcheckTimeout = 200
-restartPolicyType = "on_failure"
-
-[deploy.phases]
-migrate = "cd ideas_io && python manage.py migrate"
-collectstatic = "cd ideas_io && python manage.py collectstatic --noinput"
+healthcheckTimeout = 300
