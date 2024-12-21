@@ -1,5 +1,9 @@
 FROM python:3.11-slim
 
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
 WORKDIR /app
 
 # Install system dependencies
@@ -9,17 +13,21 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy project files
+# Copy only requirements first to leverage Docker cache
 COPY requirements.txt .
-COPY manage.py .
-COPY ideas_io/ ideas_io/
-COPY static/ static/
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Python dependencies
-RUN pip install -r requirements.txt
+# Copy project files
+COPY . .
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
+# Make sure manage.py is executable
+RUN chmod +x ideas_io/manage.py
 
-# Run migrations and start server
+# Set the working directory to where manage.py is
+WORKDIR /app/ideas_io
+
+# Expose port
+EXPOSE 8000
+
+# Command to run migrations and start the application
 CMD ["gunicorn", "ideas_io.wsgi:application", "--bind", "0.0.0.0:8000"]
