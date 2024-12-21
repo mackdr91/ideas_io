@@ -76,7 +76,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ideas_io.wsgi.application'
 
 # Database configuration
-POSTGRES_LOCAL = False
+POSTGRES_LOCAL = True
 if ENVIRONMENT == 'development' or POSTGRES_LOCAL == 'True' or os.getenv('DATABASE_URL') is None:
     DATABASES = {
         'default': {
