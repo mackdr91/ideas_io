@@ -4,28 +4,31 @@ import { toast } from 'react-toastify'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
-
 const EditNote = ({updateIdea}) => {
   const navigate = useNavigate()
   const {slug} = useParams()
-  const [note, setNote] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   const [formData, setFormData] = useState({
-    title: note?.title,
-    description: note?.description,
-    category: note?.category
-})
+    title: '',
+    description: '',
+    category: ''
+  })
 
   useEffect(() => {
-    axios.get(`http://127.0.0.1:8000/api/v1/ideas/${slug}/`)
+    setLoading(true)
+    axios.get(`http://127.0.0.1:8002/api/v1/ideas/${slug}/`)
     .then((res) => {
       setFormData(res.data)
+      setLoading(false)
     })
     .catch((err) => {
       console.log(err.message)
       toast.error('Error fetching idea')
+      setLoading(false)
+      navigate('/')
     })
-  }, [slug])
+  }, [slug, navigate])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -39,7 +42,10 @@ const EditNote = ({updateIdea}) => {
     e.preventDefault()
     updateIdea(formData)
     navigate(`/ideas/${slug}`)
+  }
 
+  if (loading) {
+    return <div className="text-center mt-10">Loading...</div>
   }
 
   return (
@@ -55,7 +61,7 @@ const EditNote = ({updateIdea}) => {
           value={formData.title}
           onChange={handleChange}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          placeholder="Enter title"
+          required
         />
       </div>
       <div className="mb-4">
@@ -64,12 +70,11 @@ const EditNote = ({updateIdea}) => {
         </label>
         <textarea
           id="description"
-          rows="15"
           name="description"
           value={formData.description}
           onChange={handleChange}
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          placeholder="Enter description"
+          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32"
+          required
         />
       </div>
       <div className="mb-4">
@@ -82,19 +87,20 @@ const EditNote = ({updateIdea}) => {
           value={formData.category}
           onChange={handleChange}
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          required
         >
-          <option value="General">General</option>
-          <option value="Business">Business</option>
+          <option value="">Select a category</option>
           <option value="Tech">Tech</option>
-          <option value="Other">Other</option>
+          <option value="Business">Business</option>
+          <option value="General">General</option>
         </select>
       </div>
-      <div className="flex items-center justify-between">
+      <div className="flex justify-end">
         <button
           type="submit"
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
         >
-          Save Changes
+          Update Idea
         </button>
       </div>
     </form>

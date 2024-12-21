@@ -38,7 +38,7 @@ function App() {
   useEffect(() => {
     setLoading(true)
     axios
-      .get("http://127.0.0.1:8000/api/v1/ideas/")
+      .get("http://127.0.0.1:8002/api/v1/ideas/")
       .then((res) => {
         setAllNotes(res.data)
         setNotes(res.data)
@@ -51,42 +51,37 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (searchText.length === 0) {
+    if (!searchText) {
       setNotes(allNotes)
       return
     }
 
-    if (searchText.length < 3) return
-
     setLoading(true)
     axios
-      .get(`http://127.0.0.1:8000/api/v1/search/?search=${searchText}`)
+      .get(`http://127.0.0.1:8002/api/v1/search/?search=${searchText}`)
       .then((res) => {
         setNotes(res.data)
         console.log(res.data)
+        setLoading(false)
       })
       .catch((err) => {
         console.log(err)
-        toast.error("Failed to fetch search results")
-      })
-      .finally(() => {
         setLoading(false)
       })
-  }, [searchText, allNotes])
+  }, [searchText])
 
   const addIdea = async (formData) => {
     setLoading(true)
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/v1/ideas/", formData)
+      const response = await axios.post("http://127.0.0.1:8002/api/v1/ideas/", formData)
       const newIdea = response.data
       setAllNotes([...allNotes, newIdea])
       setNotes([...notes, newIdea])
       toast.success("Idea added successfully")
-      return newIdea
-    } catch (err) {
-      console.log(err.message)
-      throw err
-    } finally {
+      setLoading(false)
+    } catch (error) {
+      console.log(error)
+      toast.error("Error adding idea")
       setLoading(false)
     }
   }
@@ -94,29 +89,29 @@ function App() {
   const updateIdea = (formData) => {
     setLoading(true)
     axios
-      .put(`http://127.0.0.1:8000/api/v1/ideas/${formData.slug}/`, formData)
+      .put(`http://127.0.0.1:8002/api/v1/ideas/${formData.slug}/`, formData)
       .then((res) => {
         toast.success("Idea updated successfully")
         setLoading(false)
       })
       .catch((err) => {
-        console.log(err.message)
+        console.log(err)
+        setLoading(false)
       })
-    setLoading(false)
   }
 
   const deleteIdea = (slug) => {
     setLoading(true)
     axios
-      .delete(`http://127.0.0.1:8000/api/v1/ideas/${slug}/`)
+      .delete(`http://127.0.0.1:8002/api/v1/ideas/${slug}/`)
       .then((res) => {
         toast.success("Idea deleted successfully")
         setLoading(false)
       })
       .catch((err) => {
-        console.log(err.message)
+        console.log(err)
+        setLoading(false)
       })
-    setLoading(false)
   }
 
   const router = createBrowserRouter(

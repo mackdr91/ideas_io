@@ -12,19 +12,21 @@ const NoteCard = ({ note }) => {
 
   return (
     <Link to={`/ideas/${note.slug}`}>
-    <div className=" bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-500 hover:scale-105">
-      <div className="md:flex">
-        <div className="p-6">
-          <div className="uppercase tracking-wide text-sm text-indigo-600 font-bold">{note.title}</div>
-          <a href="#" className="block mt-2 text-lg leading-tight font-medium text-gray-900 hover:underline">{truncate(note.description, 50)}</a>
-          <p className="mt-3 text-gray-600">Created: {FormatDate(note.created_at)}</p>
-          <p className="mt-3 text-gray-600">Updated: {FormatDate(note.updated_at)}</p>
-          <p className={`mt-3 text-gray-600 ${color}`}>{note.category}</p>
-          <div className="mt-4">
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden transform transition duration-500 hover:scale-105">
+        <div className="md:flex">
+          <div className="p-6">
+            <div className="uppercase tracking-wide text-sm text-indigo-600 font-bold">{note.title}</div>
+            <div className="block mt-2 text-lg leading-tight font-medium text-gray-900 hover:underline">
+              {truncate(note.description, 50)}
+            </div>
+            <p className="mt-3 text-gray-600">Created: {FormatDate(note.created_at)}</p>
+            <p className="mt-3 text-gray-600">Updated: {FormatDate(note.updated_at)}</p>
+            <p className={`mt-3 text-gray-600 ${color}`}>{note.category}</p>
+            <div className="mt-4">
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </Link>
   )
 }
