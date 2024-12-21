@@ -86,18 +86,24 @@ function App() {
     }
   }
 
-  const updateIdea = (formData) => {
-    setLoading(true)
-    axios
-      .put(`http://127.0.0.1:8002/api/v1/ideas/${formData.slug}/`, formData)
-      .then((res) => {
-        toast.success("Idea updated successfully")
-        setLoading(false)
-      })
-      .catch((err) => {
-        console.log(err)
-        setLoading(false)
-      })
+  const updateIdea = async (formData) => {
+    try {
+      const response = await axios.put(`http://127.0.0.1:8002/api/v1/ideas/${formData.slug}/`, formData)
+      const updatedIdea = response.data
+      
+      // Update both notes arrays
+      setAllNotes(prevNotes => prevNotes.map(note => 
+        note.slug === updatedIdea.slug ? updatedIdea : note
+      ))
+      setNotes(prevNotes => prevNotes.map(note => 
+        note.slug === updatedIdea.slug ? updatedIdea : note
+      ))
+      
+      return updatedIdea // Return the updated idea for the EditNote component
+    } catch (error) {
+      console.error('Error updating idea:', error)
+      throw error // Propagate error to EditNote component
+    }
   }
 
   const deleteIdea = (slug) => {
