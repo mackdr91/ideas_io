@@ -1,2 +1,2 @@
 release: python manage.py migrate
-web: gunicorn --chdir ideas_io ideas_io.wsgi:application
+web: cd ideas_io && gunicorn ideas_io.wsgi:application

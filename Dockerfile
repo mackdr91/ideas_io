@@ -13,21 +13,15 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy only requirements first to leverage Docker cache
+# Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
+# Copy project
 COPY . .
-
-# Make sure manage.py is executable
-RUN chmod +x ideas_io/manage.py
-
-# Set the working directory to where manage.py is
-WORKDIR /app/ideas_io
 
 # Expose port
 EXPOSE 8000
 
-# Command to run migrations and start the application
-CMD ["gunicorn", "ideas_io.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Command to run the application
+CMD ["sh", "-c", "cd ideas_io && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn ideas_io.wsgi:application --bind 0.0.0.0:8000"]
