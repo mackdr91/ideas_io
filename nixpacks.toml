@@ -5,16 +5,8 @@ aptPkgs = ['python3-pip', 'python3-dev', 'build-essential']
 [phases.install]
 cmds = [
     '/usr/bin/python3 -m pip install --upgrade pip',
-    'cd ideas_io',
-    'pip install -r requirements.txt',
-    'pip install django djangorestframework django-cors-headers'
+    'cd ideas_io && pip install -r requirements.txt && pip install django djangorestframework django-cors-headers'
 ]
 
 [start]
-cmd = '''
-export PYTHONPATH=/app/ideas_io:$PYTHONPATH
-cd ideas_io && 
-python manage.py migrate && 
-python manage.py collectstatic --noinput && 
-gunicorn ideas_io.wsgi:application --bind 0.0.0.0:$PORT
-'''
+cmd = 'export PYTHONPATH=/app/ideas_io:$PYTHONPATH && cd ideas_io && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn ideas_io.wsgi:application --bind 0.0.0.0:$PORT'
