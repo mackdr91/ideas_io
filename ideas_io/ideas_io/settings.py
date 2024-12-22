@@ -81,8 +81,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ideas_io.wsgi.application'
 
 # Database configuration
-POSTGRES_LOCAL = True
-if ENVIRONMENT == 'development' or POSTGRES_LOCAL == 'True' or os.getenv('DATABASE_URL') is None:
+if ENVIRONMENT == 'development':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -91,8 +90,39 @@ if ENVIRONMENT == 'development' or POSTGRES_LOCAL == 'True' or os.getenv('DATABA
     }
 else:
     DATABASES = {
-        'default': dj_database_url.parse(os.getenv('DATABASE_URL'))
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

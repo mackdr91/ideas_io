@@ -1,11 +1,14 @@
+import logging
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
+from django.db.models import Q
+from django.core.exceptions import ValidationError
 
 from .serializers import IdeaSerializer
 from .models import Idea
 
-from django.db.models import Q
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -23,18 +26,39 @@ def ideas(request) -> Response:
         Response: The response object
     """
     if request.method == 'GET':
-        # Retrieve all ideas
-        ideas = Idea.objects.all() # Query the Idea model to get all ideas
-        serializer = IdeaSerializer(ideas, many=True) # Serialize the ideas
-        return Response(serializer.data) # Return the serialized data
+        try:
+            ideas = Idea.objects.all().order_by('-created_at')
+            serializer = IdeaSerializer(ideas, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            logger.error(f"Error retrieving ideas: {str(e)}")
+            return Response(
+                {"error": "Failed to retrieve ideas"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     elif request.method == 'POST':
-        # Create a new idea
-        serializer = IdeaSerializer(data=request.data) # Deserialize the request data
-        if serializer.is_valid(): # Check if the deserialized data is valid
-            serializer.save() # Save the idea
-            return Response(serializer.data, status=status.HTTP_201_CREATED) # Return the serialized data
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # Return the errors
+        try:
+            logger.info(f"Received POST request with data: {request.data}")
+            serializer = IdeaSerializer(data=request.data)
+            if serializer.is_valid():
+                idea = serializer.save()
+                logger.info(f"Successfully created idea with ID: {idea.id}")
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            logger.error(f"Validation error: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            logger.error(f"Validation error: {str(e)}")
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            logger.error(f"Error creating idea: {str(e)}")
+            return Response(
+                {"error": "Failed to create idea"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -52,27 +76,51 @@ def idea_detail(request, slug) -> Response:
         Response: The response object
     """
     try:
-        idea = Idea.objects.get(slug=slug) # Query the Idea model to get the idea with the given slug
+        idea = Idea.objects.get(slug=slug)
     except Idea.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND) # Return a 404 status code if the idea does not exist
+        logger.error(f"Idea with slug {slug} not found")
+        return Response(
+            {"error": "Idea not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        logger.error(f"Error retrieving idea: {str(e)}")
+        return Response(
+            {"error": "Failed to retrieve idea"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
     if request.method == 'GET':
-        # Retrieve a specific idea
-        serializer = IdeaSerializer(idea) # Serialize the idea
-        return Response(serializer.data) # Return the serialized data
+        serializer = IdeaSerializer(idea)
+        return Response(serializer.data)
 
     elif request.method == 'PUT':
-        # Update an existing idea
-        serializer = IdeaSerializer(idea, data=request.data) # Deserialize the request data
-        if serializer.is_valid(): # Check if the deserialized data is valid
-            serializer.save() # Save the idea
-            return Response(serializer.data) # Return the serialized data
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # Return the errors
+        try:
+            serializer = IdeaSerializer(idea, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                logger.info(f"Successfully updated idea with slug: {slug}")
+                return Response(serializer.data)
+            logger.error(f"Validation error: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"Error updating idea: {str(e)}")
+            return Response(
+                {"error": "Failed to update idea"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     elif request.method == 'DELETE':
-        # Delete an existing idea
-        idea.delete() # Delete the idea
-        return Response(status=status.HTTP_204_NO_CONTENT) # Return a 204 status code
+        try:
+            idea.delete()
+            logger.info(f"Successfully deleted idea with slug: {slug}")
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            logger.error(f"Error deleting idea: {str(e)}")
+            return Response(
+                {"error": "Failed to delete idea"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 @api_view(['GET'])
@@ -80,7 +128,17 @@ def search_ideas(request) -> Response:
     """
     Search for ideas by title
     """
-    query = request.query_params.get("search")
-    ideas = Idea.objects.filter(Q(title__icontains=query) | Q(description__icontains=query) | Q(category__icontains=query))
-    serializer = IdeaSerializer(ideas, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    try:
+        search = request.GET.get('search', '')
+        ideas = Idea.objects.filter(
+            Q(title__icontains=search) |
+            Q(description__icontains=search)
+        ).order_by('-created_at')
+        serializer = IdeaSerializer(ideas, many=True)
+        return Response(serializer.data)
+    except Exception as e:
+        logger.error(f"Error searching ideas: {str(e)}")
+        return Response(
+            {"error": "Failed to search ideas"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
