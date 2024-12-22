@@ -9,6 +9,8 @@ import ErrorBoundary from './components/ErrorBoundary'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8002'
+
 function App() {
   const [allNotes, setAllNotes] = useState([])
   const [notes, setNotes] = useState([])
@@ -38,7 +40,7 @@ function App() {
   useEffect(() => {
     setLoading(true)
     axios
-      .get("http://127.0.0.1:8002/api/v1/ideas/")
+      .get(`${API_URL}/api/v1/ideas/`)
       .then((res) => {
         setAllNotes(res.data)
         setNotes(res.data)
@@ -58,7 +60,7 @@ function App() {
 
     setLoading(true)
     axios
-      .get(`http://127.0.0.1:8002/api/v1/search/?search=${searchText}`)
+      .get(`${API_URL}/api/v1/search/?search=${searchText}`)
       .then((res) => {
         setNotes(res.data)
         console.log(res.data)
@@ -73,7 +75,7 @@ function App() {
   const addIdea = async (formData) => {
     setLoading(true)
     try {
-      const response = await axios.post("http://127.0.0.1:8002/api/v1/ideas/", formData)
+      const response = await axios.post(`${API_URL}/api/v1/ideas/`, formData)
       const newIdea = response.data
       setAllNotes([...allNotes, newIdea])
       setNotes([...notes, newIdea])
@@ -88,7 +90,7 @@ function App() {
 
   const updateIdea = async (formData) => {
     try {
-      const response = await axios.put(`http://127.0.0.1:8002/api/v1/ideas/${formData.slug}/`, formData)
+      const response = await axios.put(`${API_URL}/api/v1/ideas/${formData.slug}/`, formData)
       const updatedIdea = response.data
       
       // Update both notes arrays
@@ -109,7 +111,7 @@ function App() {
   const deleteIdea = (slug) => {
     setLoading(true)
     axios
-      .delete(`http://127.0.0.1:8002/api/v1/ideas/${slug}/`)
+      .delete(`${API_URL}/api/v1/ideas/${slug}/`)
       .then((res) => {
         toast.success("Idea deleted successfully")
         setLoading(false)
