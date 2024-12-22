@@ -94,8 +94,17 @@ else:
             default=os.getenv('DATABASE_URL'),
             conn_max_age=600,
             conn_health_checks=True,
+            ssl_require=True,
+            connect_timeout=5,
         )
     }
+
+# Print database config for debugging (excluding sensitive info)
+if ENVIRONMENT != 'development':
+    db_config = DATABASES['default'].copy()
+    if 'PASSWORD' in db_config:
+        db_config['PASSWORD'] = '********'
+    print(f"Database configuration: {db_config}")
 
 # Logging configuration
 LOGGING = {
