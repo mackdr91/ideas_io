@@ -25,6 +25,20 @@ EXPOSE 8000
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV DJANGO_SETTINGS_MODULE=ideas_io.settings
+ENV PORT=8000
 
-# Run migrations and start server
-CMD python manage.py migrate && gunicorn ideas_io.wsgi:application --bind 0.0.0.0:$PORT
+# Create log directory
+RUN mkdir -p /var/log/gunicorn
+
+# Run migrations and start server with proper logging
+CMD python manage.py migrate && \
+    gunicorn ideas_io.wsgi:application \
+    --bind 0.0.0.0:$PORT \
+    --workers 4 \
+    --threads 4 \
+    --timeout 120 \
+    --access-logfile - \
+    --error-logfile - \
+    --log-level debug \
+    --capture-output \
+    --enable-stdio-inheritance
