@@ -134,13 +134,18 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS settings
-if DEBUG:
+if ENVIRONMENT == 'development':
     CORS_ALLOW_ALL_ORIGINS = True
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:5173",
         "http://localhost:5174",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
+    ]
+else:
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOWED_ORIGINS = [
+        'https://ideasio.up.railway.app',
     ]
     CORS_ALLOW_CREDENTIALS = True
     CORS_ALLOW_METHODS = [
@@ -162,18 +167,21 @@ if DEBUG:
         'x-csrftoken',
         'x-requested-with',
     ]
-else:
-    CORS_ALLOW_ALL_ORIGINS = False
-    CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
-    CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'https://*.railway.app').split(',')
 
 # Security settings
-if DEBUG:
+if ENVIRONMENT == 'development':
     SECURE_SSL_REDIRECT = False
     SECURE_PROXY_SSL_HEADER = None
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
 else:
-    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
-    SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'True').lower() == 'true'
-    CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'True').lower() == 'true'
+    SECURE_SSL_REDIRECT = False  # Railway handles SSL
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_DOMAIN = '.railway.app'
+    SESSION_COOKIE_DOMAIN = '.railway.app'
+    CSRF_TRUSTED_ORIGINS = [
+        'https://ideasio.up.railway.app',
+        'https://*.railway.app'
+    ]
