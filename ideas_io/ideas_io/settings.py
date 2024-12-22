@@ -24,10 +24,16 @@ if ENVIRONMENT == 'development':
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ['ideasio.up.railway.app', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = [
+    'ideasio.up.railway.app',
+    'courteous-integrity-production.up.railway.app',
+    '127.0.0.1',
+    'localhost'
+]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://ideasio.up.railway.app'
+    'https://ideasio.up.railway.app',
+    'https://courteous-integrity-production.up.railway.app'
 ]
 
 # Application definition
@@ -146,6 +152,7 @@ else:
     CORS_ALLOW_ALL_ORIGINS = False
     CORS_ALLOWED_ORIGINS = [
         'https://ideasio.up.railway.app',
+        'https://courteous-integrity-production.up.railway.app'
     ]
     CORS_ALLOW_CREDENTIALS = True
     CORS_ALLOW_METHODS = [
@@ -179,9 +186,9 @@ else:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    CSRF_COOKIE_DOMAIN = '.railway.app'
-    SESSION_COOKIE_DOMAIN = '.railway.app'
     CSRF_TRUSTED_ORIGINS = [
         'https://ideasio.up.railway.app',
-        'https://*.railway.app'
+        'https://courteous-integrity-production.up.railway.app'
     ]
+    CSRF_COOKIE_DOMAIN = '.railway.app'
+    SESSION_COOKIE_DOMAIN = '.railway.app'
